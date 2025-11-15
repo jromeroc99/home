@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
+import org.eclipse.paho.client.mqttv3.IMqttMessageListener
 import org.eclipse.paho.client.mqttv3.IMqttToken
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
@@ -48,13 +49,13 @@ class MqttHelper(
             client.connect(opts, null, object : IMqttActionListener {
                 override fun onSuccess(asyncActionToken: IMqttToken?) {
                     connected = true
-                    AppLog.i("MqttHelper", "Conectado a $serverUri")
+                    Log.i("MqttHelper", "Conectado a $serverUri")
                 }
 
                 override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
                     connected = false
                     val msg = exception?.message ?: asyncActionToken?.exception?.message ?: "unknown"
-                    AppLog.w("MqttHelper", "Fallo conexión MQTT a $serverUri: $msg", exception)
+                    Log.w("MqttHelper", "Fallo conexión MQTT a $serverUri: $msg", exception)
                 }
             })
         } catch (e: MqttException) {
@@ -79,6 +80,48 @@ class MqttHelper(
             })
         } catch (e: Exception) {
             Log.e("MqttHelper", "Error publicando MQTT", e)
+        }
+    }
+
+    fun subscribe(topic: String, qos: Int = 1, onMessageReceived: (String, String) -> Unit) {
+        try {
+            if (!client.isConnected) {
+                Log.w("MqttHelper", "Cliente no conectado, intentando conectar...")
+                connect()
+            }
+
+            client.subscribe(topic, qos, null, object : IMqttActionListener {
+                override fun onSuccess(asyncActionToken: IMqttToken?) {
+                    Log.i("MqttHelper", "Suscrito a $topic")
+                }
+
+                override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
+                    Log.w("MqttHelper", "Fallo suscripción a $topic", exception)
+                }
+            }, IMqttMessageListener { topic, message ->
+                val payload = String(message.payload, Charsets.UTF_8)
+                onMessageReceived(topic, payload)
+            })
+        } catch (e: Exception) {
+            Log.e("MqttHelper", "Error suscribiendo MQTT", e)
+        }
+    }
+
+    fun unsubscribe(topic: String) {
+        try {
+            if (client.isConnected) {
+                client.unsubscribe(topic, null, object : IMqttActionListener {
+                    override fun onSuccess(asyncActionToken: IMqttToken?) {
+                        Log.i("MqttHelper", "Desuscrito de $topic")
+                    }
+
+                    override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
+                        Log.w("MqttHelper", "Fallo desuscripción de $topic", exception)
+                    }
+                })
+            }
+        } catch (e: Exception) {
+            Log.e("MqttHelper", "Error desuscribiendo MQTT", e)
         }
     }
 
