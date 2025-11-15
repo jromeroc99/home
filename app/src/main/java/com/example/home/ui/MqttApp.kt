@@ -1,12 +1,14 @@
 package com.example.home.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.home.models.ReceivedMessage
+import com.example.home.ui.components.SettingsDialog
 import com.example.home.ui.screens.ButtonsTab
-import com.example.home.ui.screens.ConnectionTab
 import com.example.home.ui.screens.PublishTab
 import com.example.home.ui.screens.SubscriptionTab
 
@@ -44,9 +46,12 @@ fun MqttApp(
     var publishTopic by remember { mutableStateOf(initialSubscribeTopic) }
     var publishMessage by remember { mutableStateOf("Hello MQTT!") }
 
-    // Estado de navegación - Botones es ahora la primera pestaña (índice 0)
+    // Estado de navegación - Sin pestaña de Conexión
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Botones", "Conexión", "Suscripción", "Publicación")
+    val tabs = listOf("Botones", "Suscripción", "Publicación")
+
+    // Estado del diálogo de configuración
+    var showSettingsDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -56,7 +61,15 @@ fun MqttApp(
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                    ),
+                    navigationIcon = {
+                        IconButton(onClick = { showSettingsDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Configuración"
+                            )
+                        }
+                    }
                 )
                 TabRow(selectedTabIndex = selectedTab) {
                     tabs.forEachIndexed { index, title ->
@@ -70,6 +83,28 @@ fun MqttApp(
             }
         }
     ) { paddingValues ->
+        // Diálogo de configuración
+        SettingsDialog(
+            showDialog = showSettingsDialog,
+            serverUri = serverUri,
+            username = username,
+            password = password,
+            isConnected = isConnected,
+            onDismiss = { showSettingsDialog = false },
+            onServerUriChange = { serverUri = it },
+            onUsernameChange = { username = it },
+            onPasswordChange = { password = it },
+            onConnect = {
+                onConnect(serverUri, username, password)
+                isConnected = true
+            },
+            onDisconnect = {
+                onDisconnect()
+                isConnected = false
+                subscribedTopics = setOf()
+            }
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -80,25 +115,7 @@ fun MqttApp(
                     isConnected = isConnected,
                     onPublish = onPublish
                 )
-                1 -> ConnectionTab(
-                    serverUri = serverUri,
-                    username = username,
-                    password = password,
-                    isConnected = isConnected,
-                    onServerUriChange = { serverUri = it },
-                    onUsernameChange = { username = it },
-                    onPasswordChange = { password = it },
-                    onConnect = {
-                        onConnect(serverUri, username, password)
-                        isConnected = true
-                    },
-                    onDisconnect = {
-                        onDisconnect()
-                        isConnected = false
-                        subscribedTopics = setOf()
-                    }
-                )
-                2 -> SubscriptionTab(
+                1 -> SubscriptionTab(
                     subscribeTopic = subscribeTopic,
                     isConnected = isConnected,
                     subscribedTopics = subscribedTopics,
@@ -116,7 +133,7 @@ fun MqttApp(
                     },
                     onClearMessages = { messages = listOf() }
                 )
-                3 -> PublishTab(
+                2 -> PublishTab(
                     publishTopic = publishTopic,
                     publishMessage = publishMessage,
                     isConnected = isConnected,
