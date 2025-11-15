@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.home.models.ReceivedMessage
+import com.example.home.ui.screens.ButtonsTab
 import com.example.home.ui.screens.ConnectionTab
 import com.example.home.ui.screens.PublishTab
 import com.example.home.ui.screens.SubscriptionTab
@@ -43,9 +44,9 @@ fun MqttApp(
     var publishTopic by remember { mutableStateOf(initialSubscribeTopic) }
     var publishMessage by remember { mutableStateOf("Hello MQTT!") }
 
-    // Estado de navegación
+    // Estado de navegación - Botones es ahora la primera pestaña (índice 0)
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Conexión", "Suscripción", "Publicación")
+    val tabs = listOf("Botones", "Conexión", "Suscripción", "Publicación")
 
     Scaffold(
         topBar = {
@@ -75,7 +76,11 @@ fun MqttApp(
                 .padding(paddingValues)
         ) {
             when (selectedTab) {
-                0 -> ConnectionTab(
+                0 -> ButtonsTab(
+                    isConnected = isConnected,
+                    onPublish = onPublish
+                )
+                1 -> ConnectionTab(
                     serverUri = serverUri,
                     username = username,
                     password = password,
@@ -93,7 +98,7 @@ fun MqttApp(
                         subscribedTopics = setOf()
                     }
                 )
-                1 -> SubscriptionTab(
+                2 -> SubscriptionTab(
                     subscribeTopic = subscribeTopic,
                     isConnected = isConnected,
                     subscribedTopics = subscribedTopics,
@@ -111,7 +116,7 @@ fun MqttApp(
                     },
                     onClearMessages = { messages = listOf() }
                 )
-                2 -> PublishTab(
+                3 -> PublishTab(
                     publishTopic = publishTopic,
                     publishMessage = publishMessage,
                     isConnected = isConnected,
