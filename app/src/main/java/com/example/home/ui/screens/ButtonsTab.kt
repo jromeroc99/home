@@ -31,9 +31,9 @@ fun ButtonsTab(
             )
         }
 
-        item {
-            ButtonsInfoCard()
-        }
+//        item {
+//            ButtonsInfoCard()
+//        }
     }
 }
 
@@ -64,15 +64,37 @@ private fun QuickActionsCard(
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            // Botón 1: Radio 1 - Hola
             QuickActionButton(
-                title = "Radio 1 - Hola",
+                title = "Portón de fuera",
+                topic = "shellies/ipe/porton/command/switch:0",
+                message = "on",
+                enabled = isConnected,
+                onPublish = onPublish
+            )
+
+            QuickActionButton(
+                title = "Luz cocina",
+                topic = "cmnd/ipe/cocina/power",
+                message = "2",
+                enabled = isConnected,
+                onPublish = onPublish
+            )
+
+            QuickActionButton(
+                title = "Luz cuarto de Javi",
                 topic = "cmnd/ipe/radio1/Backlog",
                 message = "RfRaw AAB02903080168029422EC28180918090918091809091809090909091809180918180918180909180909180955;RfRaw 0",
                 enabled = isConnected,
                 onPublish = onPublish
             )
 
+            QuickActionButton(
+                title = "Ventilador cuarto de Javi",
+                topic = "cmnd/ipe/radio1/Backlog",
+                message = "RfRaw AAB0290308015E02A8233228181818091818090909091809090909091809180918180918180909180909180955;RfRaw 0",
+                enabled = isConnected,
+                onPublish = onPublish
+            )
 
         }
     }
@@ -86,45 +108,12 @@ private fun QuickActionButton(
     enabled: Boolean,
     onPublish: (String, String) -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (enabled)
-                MaterialTheme.colorScheme.secondaryContainer
-            else
-                MaterialTheme.colorScheme.surfaceVariant
-        )
+    Button(
+        onClick = { onPublish(topic, message) },
+        enabled = enabled,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = "Topic: $topic",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Text(
-                text = "Mensaje: $message",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Button(
-                onClick = { onPublish(topic, message) },
-                enabled = enabled,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Enviar")
-            }
-        }
+        Text(title, fontSize = 16.sp)
     }
 }
 

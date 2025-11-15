@@ -52,7 +52,7 @@ fun MqttApp(
         topBar = {
             Column {
                 TopAppBar(
-                    title = { Text("MQTT Client") },
+                    title = { Text("Mi hogar") },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
